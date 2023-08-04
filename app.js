@@ -89,3 +89,64 @@ function addMeal(mealData, random = false) {
 
     mealsEl.appendChild(meal);
 }
+
+function addMealLS(mealId) {
+    const mealIds = getMealsLS();
+
+    localStorage.setItem("mealIds", JSON.stringify([...mealIds, mealId]));
+}
+
+function removeMealLS(mealId) {
+    const mealIds = getMealsLS();
+
+    localStorage.setItem(
+        "mealIds",
+        JSON.stringify(mealIds.filter((id) => id !== mealId))
+    );
+}
+
+function getMealsLS() {
+    const mealIds = JSON.parse(localStorage.getItem("mealIds"));
+
+    return mealIds === null ? [] : mealIds;
+}
+
+async function fetchFavMeals() {
+    // clean the container
+    favoriteContainer.innerHTML = "";
+
+    const mealIds = getMealsLS();
+
+    for (let i = 0; i < mealIds.length; i++) {
+        const mealId = mealIds[i];
+        meal = await getMealById(mealId);
+
+        addMealFav(meal);
+    }
+}
+
+function addMealFav(mealData) {
+    const favMeal = document.createElement("li");
+
+    favMeal.innerHTML = `
+        <img
+            src="${mealData.strMealThumb}"
+            alt="${mealData.strMeal}"
+        /><span>${mealData.strMeal}</span>
+        <button class="clear"><i class="fas fa-window-close"></i></button>
+    `;
+
+    const btn = favMeal.querySelector(".clear");
+
+    btn.addEventListener("click", () => {
+        removeMealLS(mealData.idMeal);
+
+        fetchFavMeals();
+    });
+
+    favMeal.addEventListener("click", () => {
+        showMealInfo(mealData);
+    });
+
+    favoriteContainer.appendChild(favMeal);
+}
